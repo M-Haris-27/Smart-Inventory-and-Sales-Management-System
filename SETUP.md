@@ -97,10 +97,29 @@ Backend health check:
 curl http://localhost:5000
 ```
 
+Test API endpoints:
+```bash
+# Register a user
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"Admin\",\"email\":\"admin@sisms.com\",\"password\":\"admin123\",\"role\":\"admin\"}"
+
+# Login
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"admin@sisms.com\",\"password\":\"admin123\"}"
+```
+
+Or import `backend/SISMS.postman_collection.json` into Postman for easier testing.
+
 Frontend:
 ```
 Open http://localhost:3000 in browser
 ```
+
+## API Documentation
+
+See `backend/API_DOCUMENTATION.md` for complete API reference with all endpoints, request/response formats, and examples.
 
 ## Next Steps
 1. Implement authentication logic

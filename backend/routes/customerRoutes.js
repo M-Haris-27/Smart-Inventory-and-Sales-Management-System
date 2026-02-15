@@ -1,9 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { getCustomers, createCustomer } = require('../controllers/customerController');
-const { auth } = require('../middleware/auth');
+const {
+    getCustomers,
+    getCustomer,
+    createCustomer,
+    updateCustomer,
+    deleteCustomer
+} = require('../controllers/customerController');
+const { auth, staffAuth } = require('../middleware/auth');
 
-router.get('/', auth, getCustomers);
-router.post('/', auth, createCustomer);
+// Staff/Admin only routes
+router.get('/', auth, staffAuth, getCustomers);
+router.get('/:id', auth, staffAuth, getCustomer);
+router.post('/', auth, staffAuth, createCustomer);
+router.put('/:id', auth, staffAuth, updateCustomer);
+router.delete('/:id', auth, staffAuth, deleteCustomer);
 
 module.exports = router;
