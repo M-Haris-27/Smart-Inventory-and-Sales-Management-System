@@ -1,6 +1,6 @@
 const Sale = require('../models/Sale');
 const Product = require('../models/Product');
-const Customer = require('../models/Customer');
+const User = require('../models/User');
 
 // Get all sales
 const getSales = async (req, res) => {
@@ -62,14 +62,14 @@ const createSale = async (req, res) => {
             return res.status(400).json({ message: 'Please provide customer and items' });
         }
 
-        // If user is a customer, use their ID; otherwise verify customer exists
+        // If user is a customer, use their ID; otherwise verify user exists
         let verifiedCustomerId = customerId;
 
         if (req.user.role === 'customer') {
             verifiedCustomerId = req.user.id;
         } else {
-            const customer = await Customer.findById(customerId);
-            if (!customer) {
+            const user = await User.findById(customerId);
+            if (!user || user.role !== 'customer') {
                 return res.status(404).json({ message: 'Customer not found' });
             }
         }
@@ -150,4 +150,77 @@ module.exports = {
     getSale,
     createSale,
     deleteSale
+};
+
+
+// Approve sale (Staff/Admin only)
+const approveSale = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id);
+
+        if (!sale) {
+            return res.status(404).json({ message: 'Sale not found' });
+        }
+
+        if (sale.status !== 'pending') {
+            return res.status(400).json({ message: 'Sale is already processed' });
+        }
+
+        sale.status = 'approved';
+        sale.approvedBy = req.user.id;
+        sale.approvedAt = new Date();
+        await sale.save();
+
+        const populatedSale = await Sale.findById(sale._id)
+            .populate('customerId', 'name email phone')
+            .populate('items.productId', 'name category');
+
+        res.json({ success: true, message: 'Sale approved', sale: populatedSale });
+    } catch (error) {
+        console.error('Approve sale error:', error);
+        res.status(500).json({ message: 'Server error approving sale' });
+    }
+};
+
+// Reject sale (Staff/Admin only)
+const rejectSale = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id).populate('items.productId');
+
+        if (!sale) {
+            return res.status(404).json({ message: 'Sale not found' });
+        }
+
+        if (sale.status !== 'pending') {
+            return res.status(400).json({ message: 'Sale is already processed' });
+        }
+
+        // Restore stock for rejected sale
+        for (const item of sale.items) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                product.quantity += item.quantity;
+                await product.save();
+            }
+        }
+
+        sale.status = 'rejected';
+        sale.approvedBy = req.user.id;
+        sale.approvedAt = new Date();
+        await sale.save();
+
+        res.json({ success: true, message: 'Sale rejected and stock restored' });
+    } catch (error) {
+        console.error('Reject sale error:', error);
+        res.status(500).json({ message: 'Server error rejecting sale' });
+    }
+};
+
+module.exports = {
+    getSales,
+    getSale,
+    createSale,
+    deleteSale,
+    approveSale,
+    rejectSale
 };

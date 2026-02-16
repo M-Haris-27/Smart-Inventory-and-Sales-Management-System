@@ -4,7 +4,9 @@ const {
     getSales,
     getSale,
     createSale,
-    deleteSale
+    deleteSale,
+    approveSale,
+    rejectSale
 } = require('../controllers/salesController');
 const { auth, staffAuth } = require('../middleware/auth');
 
@@ -13,7 +15,9 @@ router.get('/', auth, getSales);
 router.get('/:id', auth, getSale);
 router.post('/', auth, createSale);
 
-// Only staff/admin can delete
+// Only staff/admin can approve, reject, or delete
+router.put('/:id/approve', auth, staffAuth, approveSale);
+router.put('/:id/reject', auth, staffAuth, rejectSale);
 router.delete('/:id', auth, staffAuth, deleteSale);
 
 module.exports = router;

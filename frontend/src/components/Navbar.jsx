@@ -24,8 +24,10 @@ const Navbar = () => {
                     <div className="flex items-center space-x-6">
                         <Link to="/dashboard" className="hover:text-blue-200 transition">Dashboard</Link>
                         <Link to="/products" className="hover:text-blue-200 transition">Products</Link>
-                        <Link to="/customers" className="hover:text-blue-200 transition">Customers</Link>
-                        <Link to="/sales" className="hover:text-blue-200 transition">Sales</Link>
+                        <Link to="/sales" className="hover:text-blue-200 transition">Orders</Link>
+                        {user?.role === 'admin' && (
+                            <Link to="/users" className="hover:text-blue-200 transition">Users</Link>
+                        )}
 
                         <div className="flex items-center space-x-4 ml-6 border-l border-blue-500 pl-6">
                             <span className="text-sm">

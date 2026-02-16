@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const { seedDatabase } = require('./utils/seedData');
 
 // Load environment variables
 dotenv.config();
@@ -9,8 +10,10 @@ dotenv.config();
 // Initialize express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB and seed data
+connectDB().then(() => {
+    seedDatabase();
+});
 
 // Middleware
 app.use(cors());

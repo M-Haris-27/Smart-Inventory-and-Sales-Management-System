@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Sales from './pages/Sales';
+import UserManagement from './pages/admin/UserManagement';
 import Layout from './components/Layout';
 import CustomerLayout from './components/CustomerLayout';
 import CustomerShop from './pages/customer/CustomerShop';
@@ -39,8 +40,8 @@ function App() {
                 <Route element={isAuthenticated && user?.role !== 'customer' ? <Layout /> : <Navigate to="/" />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
-                    <Route path="/customers" element={<Customers />} />
                     <Route path="/sales" element={<Sales />} />
+                    <Route path="/users" element={user?.role === 'admin' ? <UserManagement /> : <Navigate to="/dashboard" />} />
                 </Route>
 
                 {/* Customer Routes */}

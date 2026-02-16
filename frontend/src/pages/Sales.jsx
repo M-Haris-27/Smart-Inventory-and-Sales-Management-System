@@ -1,174 +1,198 @@
 import React, { useEffect, useState } from 'react';
 import { salesService } from '../services/salesService';
-import { productService } from '../services/productService';
-import { customerService } from '../services/customerService';
+import jsPDF from 'jspdf';
 
 const Sales = () => {
     const [sales, setSales] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({
-        customerId: '',
-        items: [{ productId: '', quantity: 1 }]
-    });
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
-        loadData();
+        loadSales();
     }, []);
 
-    const loadData = async () => {
+    const loadSales = async () => {
         try {
-            const [salesData, productsData, customersData] = await Promise.all([
-                salesService.getAll(),
-                productService.getAll(),
-                customerService.getAll()
-            ]);
-            setSales(salesData.sales);
-            setProducts(productsData.products);
-            setCustomers(customersData.customers);
+            const data = await salesService.getAll();
+            setSales(data.sales);
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('Error loading sales:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await salesService.create(formData);
-            setFormData({ customerId: '', items: [{ productId: '', quantity: 1 }] });
-            setShowForm(false);
-            loadData();
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error creating sale');
+    const handleApprove = async (id) => {
+        if (window.confirm('Approve this order?')) {
+            try {
+                await salesService.approve(id);
+                loadSales();
+                alert('Order approved successfully');
+            } catch (error) {
+                alert(error.response?.data?.message || 'Error approving order');
+            }
         }
     };
 
-    const addItem = () => {
-        setFormData({
-            ...formData,
-            items: [...formData.items, { productId: '', quantity: 1 }]
+    const handleReject = async (id) => {
+        if (window.confirm('Reject this order? This will restore the product stock.')) {
+            try {
+                await salesService.reject(id);
+                loadSales();
+                alert('Order rejected successfully');
+            } catch (error) {
+                alert(error.response?.data?.message || 'Error rejecting order');
+            }
+        }
+    };
+
+    const downloadReceipt = (order) => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.setFont(undefined, 'bold');
+        doc.text('SISMS RECEIPT', 105, 20, { align: 'center' });
+
+        doc.setLineWidth(0.5);
+        doc.line(20, 25, 190, 25);
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Order ID: ${order._id}`, 20, 35);
+        doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 20, 42);
+        doc.text(`Customer: ${order.customerId?.name || 'N/A'}`, 20, 49);
+        doc.text(`Status: ${order.status.toUpperCase()}`, 20, 56);
+
+        doc.line(20, 62, 190, 62);
+
+        doc.setFont(undefined, 'bold');
+        doc.text('ITEMS', 20, 70);
+        doc.setFont(undefined, 'normal');
+
+        let yPosition = 78;
+        order.items.forEach((item, index) => {
+            const productName = item.productId?.name || 'Product';
+            const quantity = item.quantity;
+            const price = item.price.toFixed(2);
+            const total = (quantity * item.price).toFixed(2);
+
+            doc.text(`${index + 1}. ${productName}`, 20, yPosition);
+            doc.text(`Qty: ${quantity} x $${price}`, 30, yPosition + 5);
+            doc.text(`$${total}`, 170, yPosition + 5, { align: 'right' });
+
+            yPosition += 12;
         });
+
+        doc.line(20, yPosition, 190, yPosition);
+        yPosition += 8;
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL:', 130, yPosition);
+        doc.text(`$${order.totalAmount.toFixed(2)}`, 190, yPosition, { align: 'right' });
+
+        yPosition += 15;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'italic');
+        doc.text('Thank you for your purchase!', 105, yPosition, { align: 'center' });
+
+        doc.save(`receipt-${order._id}.pdf`);
     };
 
-    const removeItem = (index) => {
-        const newItems = formData.items.filter((_, i) => i !== index);
-        setFormData({ ...formData, items: newItems });
-    };
-
-    const updateItem = (index, field, value) => {
-        const newItems = [...formData.items];
-        newItems[index][field] = value;
-        setFormData({ ...formData, items: newItems });
-    };
+    const filteredSales = sales.filter(sale => {
+        if (filter === 'all') return true;
+        return sale.status === filter;
+    });
 
     if (loading) return <div className="p-6">Loading...</div>;
 
     return (
         <div className="container mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Sales</h1>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    {showForm ? 'Cancel' : 'Create Sale'}
-                </button>
-            </div>
-
-            {showForm && (
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
-                    <h2 className="text-xl font-bold mb-4">Create Sale</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Customer</label>
-                            <select
-                                value={formData.customerId}
-                                onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                                className="w-full px-3 py-2 border rounded"
-                                required
-                            >
-                                <option value="">Select Customer</option>
-                                {customers.map((customer) => (
-                                    <option key={customer._id} value={customer._id}>
-                                        {customer.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Items</label>
-                            {formData.items.map((item, index) => (
-                                <div key={index} className="flex gap-2 mb-2">
-                                    <select
-                                        value={item.productId}
-                                        onChange={(e) => updateItem(index, 'productId', e.target.value)}
-                                        className="flex-1 px-3 py-2 border rounded"
-                                        required
-                                    >
-                                        <option value="">Select Product</option>
-                                        {products.map((product) => (
-                                            <option key={product._id} value={product._id}>
-                                                {product.name} (${product.price})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={item.quantity}
-                                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                                        className="w-24 px-3 py-2 border rounded"
-                                        required
-                                    />
-                                    {formData.items.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeItem(index)}
-                                            className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                                        >
-                                            Remove
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={addItem}
-                                className="mt-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                            >
-                                Add Item
-                            </button>
-                        </div>
-
-                        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-                            Create Sale
-                        </button>
-                    </form>
+                <h1 className="text-3xl font-bold">Order Management</h1>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 rounded ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilter('pending')}
+                        className={`px-4 py-2 rounded ${filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200'}`}
+                    >
+                        Pending
+                    </button>
+                    <button
+                        onClick={() => setFilter('approved')}
+                        className={`px-4 py-2 rounded ${filter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+                    >
+                        Approved
+                    </button>
+                    <button
+                        onClick={() => setFilter('rejected')}
+                        className={`px-4 py-2 rounded ${filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
+                    >
+                        Rejected
+                    </button>
                 </div>
-            )}
+            </div>
 
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 <table className="w-full">
                     <thead className="bg-gray-100">
                         <tr>
+                            <th className="px-6 py-3 text-left">Order ID</th>
                             <th className="px-6 py-3 text-left">Customer</th>
                             <th className="px-6 py-3 text-left">Items</th>
-                            <th className="px-6 py-3 text-left">Total Amount</th>
+                            <th className="px-6 py-3 text-left">Total</th>
+                            <th className="px-6 py-3 text-left">Status</th>
                             <th className="px-6 py-3 text-left">Date</th>
+                            <th className="px-6 py-3 text-left">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {sales.map((sale) => (
+                        {filteredSales.map((sale) => (
                             <tr key={sale._id} className="border-t">
+                                <td className="px-6 py-4">#{sale._id.slice(-8)}</td>
                                 <td className="px-6 py-4">{sale.customerId?.name || 'N/A'}</td>
                                 <td className="px-6 py-4">{sale.items.length} items</td>
                                 <td className="px-6 py-4">${sale.totalAmount.toFixed(2)}</td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded text-xs ${sale.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                            sale.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                        {sale.status}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                                <td className="px-6 py-4">
+                                    {sale.status === 'pending' && (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleApprove(sale._id)}
+                                                className="text-green-600 hover:underline"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(sale._id)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    )}
+                                    {sale.status === 'approved' && (
+                                        <button
+                                            onClick={() => downloadReceipt(sale)}
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            Download PDF
+                                        </button>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

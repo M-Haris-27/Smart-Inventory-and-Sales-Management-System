@@ -26,16 +26,13 @@ const OrderHistory = () => {
     const downloadReceipt = (order) => {
         const doc = new jsPDF();
 
-        // Header
         doc.setFontSize(20);
         doc.setFont(undefined, 'bold');
         doc.text('SISMS RECEIPT', 105, 20, { align: 'center' });
 
-        // Line under header
         doc.setLineWidth(0.5);
         doc.line(20, 25, 190, 25);
 
-        // Order details
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         doc.text(`Order ID: ${order._id}`, 20, 35);
@@ -43,15 +40,12 @@ const OrderHistory = () => {
         doc.text(`Customer: ${order.customerId?.name || 'N/A'}`, 20, 49);
         doc.text(`Email: ${order.customerId?.email || 'N/A'}`, 20, 56);
 
-        // Line before items
         doc.line(20, 62, 190, 62);
 
-        // Items header
         doc.setFont(undefined, 'bold');
         doc.text('ITEMS', 20, 70);
         doc.setFont(undefined, 'normal');
 
-        // Items list
         let yPosition = 78;
         order.items.forEach((item, index) => {
             const productName = item.productId?.name || 'Product';
@@ -66,23 +60,19 @@ const OrderHistory = () => {
             yPosition += 12;
         });
 
-        // Line before total
         doc.line(20, yPosition, 190, yPosition);
         yPosition += 8;
 
-        // Total
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL:', 130, yPosition);
         doc.text(`$${order.totalAmount.toFixed(2)}`, 190, yPosition, { align: 'right' });
 
-        // Footer
         yPosition += 15;
         doc.setFontSize(10);
         doc.setFont(undefined, 'italic');
         doc.text('Thank you for your purchase!', 105, yPosition, { align: 'center' });
 
-        // Save PDF
         doc.save(`receipt-${order._id}.pdf`);
     };
 
@@ -111,16 +101,30 @@ const OrderHistory = () => {
                                         <p className="text-sm text-gray-600">
                                             {new Date(order.createdAt).toLocaleString()}
                                         </p>
+                                        <span className={`inline-block mt-2 px-3 py-1 rounded text-sm ${order.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                                order.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                    'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                            {order.status === 'pending' ? 'Pending Approval' :
+                                                order.status === 'approved' ? 'Approved' : 'Rejected'}
+                                        </span>
                                     </div>
-                                    <button
-                                        onClick={() => downloadReceipt(order)}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        Download PDF
-                                    </button>
+                                    {order.status === 'approved' && (
+                                        <button
+                                            onClick={() => downloadReceipt(order)}
+                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Download PDF
+                                        </button>
+                                    )}
+                                    {order.status === 'pending' && (
+                                        <div className="text-yellow-600 text-sm">
+                                            Waiting for approval
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="border-t pt-4">

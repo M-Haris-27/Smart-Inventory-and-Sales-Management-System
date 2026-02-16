@@ -16,6 +16,16 @@ export const salesService = {
         return response.data;
     },
 
+    approve: async (id) => {
+        const response = await api.put(`/sales/${id}/approve`);
+        return response.data;
+    },
+
+    reject: async (id) => {
+        const response = await api.put(`/sales/${id}/reject`);
+        return response.data;
+    },
+
     delete: async (id) => {
         const response = await api.delete(`/sales/${id}`);
         return response.data;

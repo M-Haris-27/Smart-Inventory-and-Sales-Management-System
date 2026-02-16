@@ -73,7 +73,7 @@ const CustomerShop = () => {
             };
 
             await salesService.create(saleData);
-            alert('Purchase successful! You can view your receipt in Order History.');
+            alert('Purchase successful! Your order is pending approval. You can view it in Order History.');
             loadProducts();
         } catch (error) {
             alert(error.response?.data?.message || 'Error processing purchase');

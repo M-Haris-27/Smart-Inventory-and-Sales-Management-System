@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const saleSchema = new mongoose.Schema({
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer',
+        ref: 'User',
         required: true
     },
     items: [{
@@ -17,6 +17,18 @@ const saleSchema = new mongoose.Schema({
     totalAmount: {
         type: Number,
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    approvedAt: {
+        type: Date
     }
 }, {
     timestamps: true
