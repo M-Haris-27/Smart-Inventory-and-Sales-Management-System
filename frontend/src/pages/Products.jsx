@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { productService } from '../services/productService';
+import ConfirmDialog from '../components/ConfirmDialog';
+import AlertDialog from '../components/AlertDialog';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
@@ -12,6 +14,8 @@ const Products = () => {
         quantity: ''
     });
     const [editId, setEditId] = useState(null);
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, productId: null });
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, message: '', type: 'info' });
 
     useEffect(() => {
         loadProducts();
@@ -33,15 +37,21 @@ const Products = () => {
         try {
             if (editId) {
                 await productService.update(editId, formData);
+                setAlertDialog({ isOpen: true, message: 'Product updated successfully!', type: 'success' });
             } else {
                 await productService.create(formData);
+                setAlertDialog({ isOpen: true, message: 'Product created successfully!', type: 'success' });
             }
             setFormData({ name: '', category: '', price: '', quantity: '' });
             setEditId(null);
             setShowForm(false);
             loadProducts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error saving product');
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || 'Error saving product',
+                type: 'error'
+            });
         }
     };
 
@@ -57,13 +67,20 @@ const Products = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this product?')) {
-            try {
-                await productService.delete(id);
-                loadProducts();
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error deleting product');
-            }
+        setConfirmDialog({ isOpen: true, productId: id });
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await productService.delete(confirmDialog.productId);
+            setAlertDialog({ isOpen: true, message: 'Product deleted successfully!', type: 'success' });
+            loadProducts();
+        } catch (error) {
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || 'Error deleting product',
+                type: 'error'
+            });
         }
     };
 
@@ -166,6 +183,24 @@ const Products = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                onClose={() => setConfirmDialog({ isOpen: false, productId: null })}
+                onConfirm={confirmDelete}
+                title="Delete Product"
+                message="Are you sure you want to delete this product? This action cannot be undone."
+                confirmText="Delete"
+                confirmColor="red"
+            />
+
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                onClose={() => setAlertDialog({ isOpen: false, message: '', type: 'info' })}
+                title={alertDialog.type === 'error' ? 'Error' : 'Success'}
+                message={alertDialog.message}
+                type={alertDialog.type}
+            />
         </div>
     );
 };

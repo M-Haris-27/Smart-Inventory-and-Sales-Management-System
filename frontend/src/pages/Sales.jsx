@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { salesService } from '../services/salesService';
 import jsPDF from 'jspdf';
+import ConfirmDialog from '../components/ConfirmDialog';
+import AlertDialog from '../components/AlertDialog';
 
 const Sales = () => {
     const [sales, setSales] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, type: '', orderId: null });
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, message: '', type: 'info' });
 
     useEffect(() => {
         loadSales();
@@ -23,26 +27,29 @@ const Sales = () => {
     };
 
     const handleApprove = async (id) => {
-        if (window.confirm('Approve this order?')) {
-            try {
-                await salesService.approve(id);
-                loadSales();
-                alert('Order approved successfully');
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error approving order');
-            }
-        }
+        setConfirmDialog({ isOpen: true, type: 'approve', orderId: id });
     };
 
     const handleReject = async (id) => {
-        if (window.confirm('Reject this order? This will restore the product stock.')) {
-            try {
-                await salesService.reject(id);
-                loadSales();
-                alert('Order rejected successfully');
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error rejecting order');
+        setConfirmDialog({ isOpen: true, type: 'reject', orderId: id });
+    };
+
+    const confirmAction = async () => {
+        try {
+            if (confirmDialog.type === 'approve') {
+                await salesService.approve(confirmDialog.orderId);
+                setAlertDialog({ isOpen: true, message: 'Order approved successfully!', type: 'success' });
+            } else if (confirmDialog.type === 'reject') {
+                await salesService.reject(confirmDialog.orderId);
+                setAlertDialog({ isOpen: true, message: 'Order rejected successfully!', type: 'success' });
             }
+            loadSales();
+        } catch (error) {
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || `Error ${confirmDialog.type}ing order`,
+                type: 'error'
+            });
         }
     };
 
@@ -160,8 +167,8 @@ const Sales = () => {
                                 <td className="px-6 py-4">${sale.totalAmount.toFixed(2)}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs ${sale.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                            sale.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                'bg-yellow-100 text-yellow-800'
+                                        sale.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                            'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {sale.status}
                                     </span>
@@ -198,6 +205,28 @@ const Sales = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                onClose={() => setConfirmDialog({ isOpen: false, type: '', orderId: null })}
+                onConfirm={confirmAction}
+                title={confirmDialog.type === 'approve' ? 'Approve Order' : 'Reject Order'}
+                message={
+                    confirmDialog.type === 'approve'
+                        ? 'Are you sure you want to approve this order?'
+                        : 'Are you sure you want to reject this order? This will restore the product stock.'
+                }
+                confirmText={confirmDialog.type === 'approve' ? 'Approve' : 'Reject'}
+                confirmColor={confirmDialog.type === 'approve' ? 'green' : 'red'}
+            />
+
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                onClose={() => setAlertDialog({ isOpen: false, message: '', type: 'info' })}
+                title={alertDialog.type === 'error' ? 'Error' : 'Success'}
+                message={alertDialog.message}
+                type={alertDialog.type}
+            />
         </div>
     );
 };

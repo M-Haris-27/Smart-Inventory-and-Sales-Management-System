@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { adminService } from '../../services/adminService';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AlertDialog from '../../components/AlertDialog';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -11,6 +13,8 @@ const UserManagement = () => {
         password: '',
         role: 'staff'
     });
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, userId: null });
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, message: '', type: 'info' });
 
     useEffect(() => {
         loadUsers();
@@ -34,20 +38,31 @@ const UserManagement = () => {
             setFormData({ name: '', email: '', password: '', role: 'staff' });
             setShowForm(false);
             loadUsers();
-            alert('User created successfully');
+            setAlertDialog({ isOpen: true, message: 'User created successfully!', type: 'success' });
         } catch (error) {
-            alert(error.response?.data?.message || 'Error creating user');
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || 'Error creating user',
+                type: 'error'
+            });
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this user?')) {
-            try {
-                await adminService.deleteUser(id);
-                loadUsers();
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error deleting user');
-            }
+        setConfirmDialog({ isOpen: true, userId: id });
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await adminService.deleteUser(confirmDialog.userId);
+            loadUsers();
+            setAlertDialog({ isOpen: true, message: 'User deleted successfully!', type: 'success' });
+        } catch (error) {
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || 'Error deleting user',
+                type: 'error'
+            });
         }
     };
 
@@ -126,8 +141,8 @@ const UserManagement = () => {
                                 <td className="px-6 py-4">{user.email}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                                            user.role === 'staff' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-green-100 text-green-800'
+                                        user.role === 'staff' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-green-100 text-green-800'
                                         }`}>
                                         {user.role}
                                     </span>
@@ -148,6 +163,24 @@ const UserManagement = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                onClose={() => setConfirmDialog({ isOpen: false, userId: null })}
+                onConfirm={confirmDelete}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                confirmText="Delete"
+                confirmColor="red"
+            />
+
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                onClose={() => setAlertDialog({ isOpen: false, message: '', type: 'info' })}
+                title={alertDialog.type === 'error' ? 'Error' : 'Success'}
+                message={alertDialog.message}
+                type={alertDialog.type}
+            />
         </div>
     );
 };

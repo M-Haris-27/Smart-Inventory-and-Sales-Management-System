@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { productService } from '../../services/productService';
 import { salesService } from '../../services/salesService';
+import InputDialog from '../../components/InputDialog';
+import AlertDialog from '../../components/AlertDialog';
 import { useSelector } from 'react-redux';
 
 const CustomerShop = () => {
@@ -11,6 +13,8 @@ const CustomerShop = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useSelector((state) => state.auth);
+    const [inputDialog, setInputDialog] = useState({ isOpen: false, product: null });
+    const [alertDialog, setAlertDialog] = useState({ isOpen: false, message: '', type: 'info' });
 
     useEffect(() => {
         loadProducts();
@@ -52,14 +56,19 @@ const CustomerShop = () => {
     };
 
     const handlePurchase = async (product) => {
-        const quantity = prompt(`How many ${product.name} would you like to purchase? (Available: ${product.quantity})`);
+        setInputDialog({ isOpen: true, product });
+    };
+
+    const confirmPurchase = async (quantity) => {
+        const product = inputDialog.product;
 
         if (!quantity || isNaN(quantity) || quantity <= 0) {
+            setAlertDialog({ isOpen: true, message: 'Please enter a valid quantity', type: 'error' });
             return;
         }
 
         if (parseInt(quantity) > product.quantity) {
-            alert('Not enough stock available');
+            setAlertDialog({ isOpen: true, message: 'Not enough stock available', type: 'error' });
             return;
         }
 
@@ -73,10 +82,18 @@ const CustomerShop = () => {
             };
 
             await salesService.create(saleData);
-            alert('Purchase successful! Your order is pending approval. You can view it in Order History.');
+            setAlertDialog({
+                isOpen: true,
+                message: 'Purchase successful! Your order is pending approval. You can view it in Order History.',
+                type: 'success'
+            });
             loadProducts();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error processing purchase');
+            setAlertDialog({
+                isOpen: true,
+                message: error.response?.data?.message || 'Error processing purchase',
+                type: 'error'
+            });
         }
     };
 
@@ -149,6 +166,25 @@ const CustomerShop = () => {
                     </div>
                 )}
             </div>
+
+            <InputDialog
+                isOpen={inputDialog.isOpen}
+                onClose={() => setInputDialog({ isOpen: false, product: null })}
+                onConfirm={confirmPurchase}
+                title="Purchase Product"
+                message={inputDialog.product ? `How many ${inputDialog.product.name} would you like to purchase? (Available: ${inputDialog.product.quantity})` : ''}
+                placeholder="Enter quantity"
+                inputType="number"
+                defaultValue="1"
+            />
+
+            <AlertDialog
+                isOpen={alertDialog.isOpen}
+                onClose={() => setAlertDialog({ isOpen: false, message: '', type: 'info' })}
+                title={alertDialog.type === 'error' ? 'Error' : 'Success'}
+                message={alertDialog.message}
+                type={alertDialog.type}
+            />
         </div>
     );
 };
