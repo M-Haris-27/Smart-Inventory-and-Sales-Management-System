@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { salesService } from '../../services/salesService';
 import { useSelector } from 'react-redux';
+import jsPDF from 'jspdf';
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
@@ -23,39 +24,66 @@ const OrderHistory = () => {
     };
 
     const downloadReceipt = (order) => {
-        const receiptContent = generateReceipt(order);
-        const blob = new Blob([receiptContent], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `receipt-${order._id}.txt`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
+        const doc = new jsPDF();
 
-    const generateReceipt = (order) => {
-        let receipt = '========================================\n';
-        receipt += '           SISMS RECEIPT\n';
-        receipt += '========================================\n\n';
-        receipt += `Order ID: ${order._id}\n`;
-        receipt += `Date: ${new Date(order.createdAt).toLocaleString()}\n`;
-        receipt += `Customer: ${order.customerId?.name || 'N/A'}\n\n`;
-        receipt += '----------------------------------------\n';
-        receipt += 'ITEMS:\n';
-        receipt += '----------------------------------------\n';
+        // Header
+        doc.setFontSize(20);
+        doc.setFont(undefined, 'bold');
+        doc.text('SISMS RECEIPT', 105, 20, { align: 'center' });
 
+        // Line under header
+        doc.setLineWidth(0.5);
+        doc.line(20, 25, 190, 25);
+
+        // Order details
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Order ID: ${order._id}`, 20, 35);
+        doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 20, 42);
+        doc.text(`Customer: ${order.customerId?.name || 'N/A'}`, 20, 49);
+        doc.text(`Email: ${order.customerId?.email || 'N/A'}`, 20, 56);
+
+        // Line before items
+        doc.line(20, 62, 190, 62);
+
+        // Items header
+        doc.setFont(undefined, 'bold');
+        doc.text('ITEMS', 20, 70);
+        doc.setFont(undefined, 'normal');
+
+        // Items list
+        let yPosition = 78;
         order.items.forEach((item, index) => {
-            receipt += `${index + 1}. ${item.productId?.name || 'Product'}\n`;
-            receipt += `   Qty: ${item.quantity} x $${item.price.toFixed(2)} = $${(item.quantity * item.price).toFixed(2)}\n\n`;
+            const productName = item.productId?.name || 'Product';
+            const quantity = item.quantity;
+            const price = item.price.toFixed(2);
+            const total = (quantity * item.price).toFixed(2);
+
+            doc.text(`${index + 1}. ${productName}`, 20, yPosition);
+            doc.text(`Qty: ${quantity} x $${price}`, 30, yPosition + 5);
+            doc.text(`$${total}`, 170, yPosition + 5, { align: 'right' });
+
+            yPosition += 12;
         });
 
-        receipt += '----------------------------------------\n';
-        receipt += `TOTAL: $${order.totalAmount.toFixed(2)}\n`;
-        receipt += '========================================\n';
-        receipt += '      Thank you for your purchase!\n';
-        receipt += '========================================\n';
+        // Line before total
+        doc.line(20, yPosition, 190, yPosition);
+        yPosition += 8;
 
-        return receipt;
+        // Total
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL:', 130, yPosition);
+        doc.text(`$${order.totalAmount.toFixed(2)}`, 190, yPosition, { align: 'right' });
+
+        // Footer
+        yPosition += 15;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'italic');
+        doc.text('Thank you for your purchase!', 105, yPosition, { align: 'center' });
+
+        // Save PDF
+        doc.save(`receipt-${order._id}.pdf`);
     };
 
     if (loading) return <div className="p-6">Loading orders...</div>;
@@ -86,9 +114,12 @@ const OrderHistory = () => {
                                     </div>
                                     <button
                                         onClick={() => downloadReceipt(order)}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
                                     >
-                                        Download Receipt
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Download PDF
                                     </button>
                                 </div>
 
