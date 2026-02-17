@@ -22,6 +22,7 @@ const CustomerShop = () => {
 
     useEffect(() => {
         filterProducts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, selectedCategory, products]);
 
     const loadProducts = async () => {

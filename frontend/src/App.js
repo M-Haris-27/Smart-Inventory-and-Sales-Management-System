@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials } from './redux/slices/authSlice';
@@ -6,7 +6,6 @@ import { authService } from './services/authService';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
-import Customers from './pages/Customers';
 import Sales from './pages/Sales';
 import UserManagement from './pages/admin/UserManagement';
 import Layout from './components/Layout';

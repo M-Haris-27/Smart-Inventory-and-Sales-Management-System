@@ -10,6 +10,7 @@ const OrderHistory = () => {
 
     useEffect(() => {
         loadOrders();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadOrders = async () => {
@@ -102,8 +103,8 @@ const OrderHistory = () => {
                                             {new Date(order.createdAt).toLocaleString()}
                                         </p>
                                         <span className={`inline-block mt-2 px-3 py-1 rounded text-sm ${order.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
+                                            order.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
                                             }`}>
                                             {order.status === 'pending' ? 'Pending Approval' :
                                                 order.status === 'approved' ? 'Approved' : 'Rejected'}
