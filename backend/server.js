@@ -16,7 +16,15 @@ connectDB().then(() => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://smart-inventory-and-sales-managemen.vercel.app',  // Add your actual Vercel URL
+        'https://smart-inventory-and-sales-management.onrender.com'  // If you have one
+    ],
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
