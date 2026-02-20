@@ -17,12 +17,9 @@ connectDB().then(() => {
 
 // Middleware
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://smart-inventory-and-sales-management-system-5ahv9mx7m.vercel.app',
-        'https://smart-inventory-and-sales-management-system.vercel.app'
-    ],
-    credentials: true
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
