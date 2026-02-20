@@ -19,8 +19,8 @@ connectDB().then(() => {
 app.use(cors({
     origin: [
         'http://localhost:3000',
-        'https://smart-inventory-and-sales-managemen.vercel.app',  // Add your actual Vercel URL
-        'https://smart-inventory-and-sales-management.onrender.com'  // If you have one
+        'https://smart-inventory-and-sales-management-system-5ahv9mx7m.vercel.app',
+        'https://smart-inventory-and-sales-management-system.vercel.app'
     ],
     credentials: true
 }));
