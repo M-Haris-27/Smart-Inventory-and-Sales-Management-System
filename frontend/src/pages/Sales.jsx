@@ -115,77 +115,77 @@ const Sales = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Order Management</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Order Management</h1>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setFilter('all')}
-                        className={`px-4 py-2 rounded ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                        className={`px-5 py-2.5 rounded-xl font-semibold transition-all ${filter === 'all' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
                     >
                         All
                     </button>
                     <button
                         onClick={() => setFilter('pending')}
-                        className={`px-4 py-2 rounded ${filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-200'}`}
+                        className={`px-5 py-2.5 rounded-xl font-semibold transition-all ${filter === 'pending' ? 'bg-yellow-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
                     >
                         Pending
                     </button>
                     <button
                         onClick={() => setFilter('approved')}
-                        className={`px-4 py-2 rounded ${filter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+                        className={`px-5 py-2.5 rounded-xl font-semibold transition-all ${filter === 'approved' ? 'bg-green-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
                     >
                         Approved
                     </button>
                     <button
                         onClick={() => setFilter('rejected')}
-                        className={`px-4 py-2 rounded ${filter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
+                        className={`px-5 py-2.5 rounded-xl font-semibold transition-all ${filter === 'rejected' ? 'bg-red-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
                     >
                         Rejected
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
                 <table className="w-full">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left">Order ID</th>
-                            <th className="px-6 py-3 text-left">Customer</th>
-                            <th className="px-6 py-3 text-left">Items</th>
-                            <th className="px-6 py-3 text-left">Total</th>
-                            <th className="px-6 py-3 text-left">Status</th>
-                            <th className="px-6 py-3 text-left">Date</th>
-                            <th className="px-6 py-3 text-left">Actions</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Order ID</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Customer</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Items</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Total</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Date</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredSales.map((sale) => (
-                            <tr key={sale._id} className="border-t">
-                                <td className="px-6 py-4">#{sale._id.slice(-8)}</td>
-                                <td className="px-6 py-4">{sale.customerId?.name || 'N/A'}</td>
-                                <td className="px-6 py-4">{sale.items.length} items</td>
-                                <td className="px-6 py-4">${sale.totalAmount.toFixed(2)}</td>
+                            <tr key={sale._id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 font-mono text-sm text-gray-600">#{sale._id.slice(-8)}</td>
+                                <td className="px-6 py-4 font-medium text-gray-800">{sale.customerId?.name || 'N/A'}</td>
+                                <td className="px-6 py-4 text-gray-600">{sale.items.length} items</td>
+                                <td className="px-6 py-4 font-bold text-blue-600">${sale.totalAmount.toFixed(2)}</td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs ${sale.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                    <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${sale.status === 'approved' ? 'bg-green-100 text-green-800' :
                                         sale.status === 'rejected' ? 'bg-red-100 text-red-800' :
                                             'bg-yellow-100 text-yellow-800'
                                         }`}>
                                         {sale.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 text-gray-600">{new Date(sale.createdAt).toLocaleDateString()}</td>
                                 <td className="px-6 py-4">
                                     {sale.status === 'pending' && (
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleApprove(sale._id)}
-                                                className="text-green-600 hover:underline"
+                                                className="text-green-600 hover:text-green-700 font-semibold transition-colors"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => handleReject(sale._id)}
-                                                className="text-red-600 hover:underline"
+                                                className="text-red-600 hover:text-red-700 font-semibold transition-colors"
                                             >
                                                 Reject
                                             </button>
@@ -194,7 +194,7 @@ const Sales = () => {
                                     {sale.status === 'approved' && (
                                         <button
                                             onClick={() => downloadReceipt(sale)}
-                                            className="text-blue-600 hover:underline"
+                                            className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                                         >
                                             Download PDF
                                         </button>

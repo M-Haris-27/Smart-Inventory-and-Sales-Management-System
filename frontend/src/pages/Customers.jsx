@@ -69,30 +69,30 @@ const Customers = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Customers</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Customers</h1>
                 <button
                     onClick={() => {
                         setShowForm(!showForm);
                         setEditId(null);
                         setFormData({ name: '', phone: '', email: '' });
                     }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                     {showForm ? 'Cancel' : 'Add Customer'}
                 </button>
             </div>
 
             {showForm && (
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
-                    <h2 className="text-xl font-bold mb-4">{editId ? 'Edit' : 'Add'} Customer</h2>
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+                <div className="bg-white p-8 rounded-2xl shadow-2xl mb-8 border border-gray-100">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800">{editId ? 'Edit' : 'Add'} Customer</h2>
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-5">
                         <input
                             type="text"
                             placeholder="Customer Name"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="px-3 py-2 border rounded"
+                            className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                         />
                         <input
@@ -100,7 +100,7 @@ const Customers = () => {
                             placeholder="Phone"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="px-3 py-2 border rounded"
+                            className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                         />
                         <input
@@ -108,42 +108,42 @@ const Customers = () => {
                             placeholder="Email"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="px-3 py-2 border rounded"
+                            className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                         />
-                        <button type="submit" className="bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                        <button type="submit" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3.5 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg">
                             {editId ? 'Update' : 'Create'} Customer
                         </button>
                     </form>
                 </div>
             )}
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
                 <table className="w-full">
-                    <thead className="bg-gray-100">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left">Name</th>
-                            <th className="px-6 py-3 text-left">Phone</th>
-                            <th className="px-6 py-3 text-left">Email</th>
-                            <th className="px-6 py-3 text-left">Actions</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Name</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Phone</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Email</th>
+                            <th className="px-6 py-4 text-left font-semibold text-gray-700">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {customers.map((customer) => (
-                            <tr key={customer._id} className="border-t">
-                                <td className="px-6 py-4">{customer.name}</td>
-                                <td className="px-6 py-4">{customer.phone}</td>
-                                <td className="px-6 py-4">{customer.email}</td>
+                            <tr key={customer._id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 font-medium text-gray-800">{customer.name}</td>
+                                <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
+                                <td className="px-6 py-4 text-gray-600">{customer.email}</td>
                                 <td className="px-6 py-4">
                                     <button
                                         onClick={() => handleEdit(customer)}
-                                        className="text-blue-600 hover:underline mr-3"
+                                        className="text-blue-600 hover:text-blue-700 font-semibold mr-4 transition-colors"
                                     >
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(customer._id)}
-                                        className="text-red-600 hover:underline"
+                                        className="text-red-600 hover:text-red-700 font-semibold transition-colors"
                                     >
                                         Delete
                                     </button>

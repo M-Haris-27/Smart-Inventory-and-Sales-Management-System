@@ -15,6 +15,12 @@ const InputDialog = ({ isOpen, onClose, onConfirm, title, message, placeholder =
         onClose();
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSubmit();
+        }
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -24,13 +30,13 @@ const InputDialog = ({ isOpen, onClose, onConfirm, title, message, placeholder =
                 <>
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                        className="px-6 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 font-semibold text-gray-700 transition-all"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
                     >
                         Confirm
                     </button>
@@ -38,13 +44,18 @@ const InputDialog = ({ isOpen, onClose, onConfirm, title, message, placeholder =
             }
         >
             <div>
-                {message && <p className="text-gray-700 mb-3">{message}</p>}
+                {message && (
+                    <div className="mb-5 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                        <p className="text-gray-700 font-medium leading-relaxed">{message}</p>
+                    </div>
+                )}
                 <input
                     type={inputType}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder={placeholder}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium"
                     autoFocus
                 />
             </div>

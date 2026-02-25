@@ -4,7 +4,7 @@ import Navbar from './Navbar';
 
 const Layout = () => {
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
             <Navbar />
             <main>
                 <Outlet />

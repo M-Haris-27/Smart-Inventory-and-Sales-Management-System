@@ -80,29 +80,41 @@ const OrderHistory = () => {
     if (loading) return <div className="p-6">Loading orders...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="bg-blue-600 text-white py-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 shadow-2xl">
                 <div className="container mx-auto px-4">
-                    <h1 className="text-4xl font-bold">Order History</h1>
+                    <div className="flex items-center space-x-3">
+                        <div className="p-3 bg-white/10 rounded-xl">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <h1 className="text-4xl font-bold">Order History</h1>
+                    </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 py-8">
                 {orders.length === 0 ? (
-                    <div className="bg-white p-8 rounded-lg shadow text-center">
+                    <div className="bg-white p-12 rounded-2xl shadow-2xl text-center border border-gray-100">
+                        <div className="inline-block p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl mb-4">
+                            <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
                         <p className="text-gray-500 text-lg">No orders yet</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {orders.map((order) => (
-                            <div key={order._id} className="bg-white rounded-lg shadow p-6">
-                                <div className="flex justify-between items-start mb-4">
+                            <div key={order._id} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow">
+                                <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <h3 className="text-lg font-bold">Order #{order._id.slice(-8)}</h3>
-                                        <p className="text-sm text-gray-600">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-2">Order #{order._id.slice(-8)}</h3>
+                                        <p className="text-sm text-gray-600 mb-3">
                                             {new Date(order.createdAt).toLocaleString()}
                                         </p>
-                                        <span className={`inline-block mt-2 px-3 py-1 rounded text-sm ${order.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                        <span className={`inline-block px-4 py-2 rounded-xl text-sm font-semibold ${order.status === 'approved' ? 'bg-green-100 text-green-800' :
                                             order.status === 'rejected' ? 'bg-red-100 text-red-800' :
                                                 'bg-yellow-100 text-yellow-800'
                                             }`}>
@@ -113,7 +125,7 @@ const OrderHistory = () => {
                                     {order.status === 'approved' && (
                                         <button
                                             onClick={() => downloadReceipt(order)}
-                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+                                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 flex items-center gap-2 font-semibold shadow-lg transition-all"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -122,27 +134,27 @@ const OrderHistory = () => {
                                         </button>
                                     )}
                                     {order.status === 'pending' && (
-                                        <div className="text-yellow-600 text-sm">
+                                        <div className="text-yellow-600 text-sm bg-yellow-50 px-4 py-2 rounded-xl font-medium">
                                             Waiting for approval
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="border-t pt-4">
-                                    <h4 className="font-semibold mb-2">Items:</h4>
-                                    <div className="space-y-2">
+                                <div className="border-t border-gray-100 pt-6">
+                                    <h4 className="font-bold text-gray-800 mb-4">Items:</h4>
+                                    <div className="space-y-3">
                                         {order.items.map((item, index) => (
-                                            <div key={index} className="flex justify-between text-sm">
-                                                <span>
-                                                    {item.productId?.name || 'Product'} x {item.quantity}
+                                            <div key={index} className="flex justify-between text-sm bg-gray-50 p-3 rounded-xl">
+                                                <span className="font-medium text-gray-700">
+                                                    {item.productId?.name || 'Product'} <span className="text-gray-500">x {item.quantity}</span>
                                                 </span>
-                                                <span>${(item.quantity * item.price).toFixed(2)}</span>
+                                                <span className="font-bold text-blue-600">${(item.quantity * item.price).toFixed(2)}</span>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="border-t mt-4 pt-4 flex justify-between font-bold text-lg">
-                                        <span>Total:</span>
-                                        <span className="text-blue-600">${order.totalAmount.toFixed(2)}</span>
+                                    <div className="border-t border-gray-200 mt-6 pt-6 flex justify-between items-center">
+                                        <span className="text-xl font-bold text-gray-800">Total:</span>
+                                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${order.totalAmount.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
